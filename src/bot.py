@@ -1,8 +1,7 @@
-import random
 import os
 import discord
 from discord.ext import commands
-from TokenManagement import TokenManager
+from src.TokenManagement import TokenManager
 
 bot = commands.Bot(command_prefix='.')
 TOKEN = TokenManager.TokenManager("TokenManagement/token.txt").read_token()
@@ -35,7 +34,7 @@ async def clear(ctx, amount=50):
     await ctx.send(f'Clear complete.')
 
 
-for file in os.listdir('./cogs'):
+for file in os.listdir('cogs'):
     if file.endswith('.py'):
         bot.load_extension(f'cogs.{file[:-3]}')
 
