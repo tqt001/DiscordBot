@@ -77,7 +77,7 @@ class ExtensionManager:
             self.bot.reload_extension(self.extensions_dict[extension])
 
 
-class ExtensionLoader(commands.bot):
+class ExtensionLoader(commands.Cog):
     def __init__(self, bot, loaded_extensions, extension_dict):
         self.bot = bot
         self.loaded_extensions = loaded_extensions
