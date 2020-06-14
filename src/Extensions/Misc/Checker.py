@@ -13,11 +13,11 @@ class StatChecker(commands.Cog):
         time_now = datetime.datetime.now(datetime.timezone.utc)
         print(msg_time)
         print(time_now)
-        # ping = round((time_now - msg.created_at).total_seconds() * 1000)
-        #  = round(self.bot.latency * 1000)
-        # msg_send = "```Your latency to the bot is {}ms.\nDiscord API latency is: {}ms```".format(ping, discord_latency)
-        # await msg.channel.send(msg_send)
-        # await msg.channel.send("{} and {}".format(msg_time, time_now))
+        ping = round((time_now - msg.created_at).total_seconds() * 1000)
+        discord_latency = round(self.bot.latency * 1000)
+        msg_send = "```Your latency to the bot is {}ms.\nDiscord API latency is: {}ms```".format(ping, discord_latency)
+        await msg.channel.send(msg_send)
+        await msg.channel.send("Message time is:{} and Bot response time is:{}".format(msg_time, time_now))
 
 
 def setup(bot):

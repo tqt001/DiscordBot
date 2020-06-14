@@ -22,8 +22,8 @@ async def on_ready():
     # Sets bot's status
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('with your girlfriend ;)'))
 
-    # Initial extensions to load
-    ext_manager = ExtensionManager(bot)
+    # Initial extensions to load. Options: All, Partial, Minimum
+    ext_manager = ExtensionManager(bot, "All")
     ext_manager.load()
 
     print('Bot is ready.')
@@ -38,10 +38,5 @@ async def on_member_join(ctx, member):
 async def on_member_remove(ctx, member):
     await ctx.send(f'Everyone say bye {member}.')
 
-
-@bot.command()
-async def clear(ctx, amount=50):
-    await ctx.channel.purge(limit=amount)
-    await ctx.send(f'Clear complete.')
 
 bot.run(TOKEN)
