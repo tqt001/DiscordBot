@@ -1,6 +1,5 @@
 import asyncio
 import os
-
 from discord.ext import commands
 
 
@@ -11,7 +10,7 @@ async def create_file_dict(directory):
     file_paths = await get_list_of_files(directory)
     file_dict = {}
     for file_path in file_paths:
-        value = file_path.replace('/', '.').replace('.py', '')
+        value = file_path.replace('.py', '')
         key = value[value.rindex('.') + 1:]
         file_dict[key] = value
     return file_dict
@@ -19,12 +18,19 @@ async def create_file_dict(directory):
 
 async def get_list_of_files(directory):
     all_files = []
-    for i in os.listdir(directory):
-        path = os.path.join(directory, i)
-        if os.path.isdir(path):
-            all_files = all_files + await get_list_of_files(path)
-        else:
-            all_files.append(path)
+
+    def helper(path_dir, ext_path):
+        for p in os.listdir(path_dir):
+            if p.startswith('__'):
+                continue
+            path = os.path.join(path_dir, p)
+            new_ext_path = ext_path + '.' + p
+            if os.path.isdir(path):
+                helper(path, new_ext_path)
+            else:
+                all_files.append(new_ext_path)
+
+    helper(directory, directory)
     return all_files
 
 
@@ -62,7 +68,8 @@ class ExtensionManager:
         for extension in self.loaded_extensions:
             self.bot.load_extension(self.extensions_dict[extension])
             print("Finished loading: {}".format(extension))
-        self.bot.add_cog(ExtensionLoader(self.bot, self.loaded_extensions.append('ExtensionLoader'), self.extension_dict))
+        self.bot.add_cog(
+            ExtensionLoader(self.bot, self.loaded_extensions.append('ExtensionLoader'), self.extension_dict))
 
     async def change_level(self, level):
         self.level = level

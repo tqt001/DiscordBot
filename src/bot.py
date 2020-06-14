@@ -20,10 +20,8 @@ TOKEN = TokenManager("TokenManagement/token.txt").read_token()
 @bot.event
 async def on_ready():
     """Tasks to initialize when the bot is finished loading and logged into discord."""
-
     # Sets bot's status
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('with your girlfriend ;)'))
-
     # Initial extensions to load.
     await ext_manager.load()
 

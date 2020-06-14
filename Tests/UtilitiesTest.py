@@ -2,33 +2,7 @@ import asyncio
 import os
 import unittest
 
-
-async def create_file_dict(directory):
-    """Creates a dict with all the files available in the directory.
-    Sets the file name as the key and its path using '.' as a delimiter instead of '/'
-    """
-    file_paths = await get_list_of_files(directory)
-    file_dict = {}
-    for file_path in file_paths:
-        value = file_path.replace('.py', '')
-        key = value[value.rindex('.') + 1:]
-        file_dict[key] = value
-    return file_dict
-
-
-async def get_list_of_files(directory):
-    all_files = []
-
-    def helper(path_dir, ext_path):
-        for p in os.listdir(path_dir):
-            path = os.path.join(path_dir, p)
-            new_ext_path = ext_path + '.' + p
-            if os.path.isdir(path):
-                helper(path, new_ext_path)
-            else:
-                all_files.append(new_ext_path)
-    helper(directory, directory)
-    return all_files
+from src.ExtensionManager import get_list_of_files, create_file_dict
 
 
 class UtilitiesTest(unittest.TestCase):
