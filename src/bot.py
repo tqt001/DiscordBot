@@ -20,10 +20,8 @@ TOKEN = TokenManager("TokenManagement/token.txt").read_token()
 @bot.event
 async def on_ready():
     """Tasks to initialize when the bot is finished loading and logged into discord."""
-
     # Sets bot's status
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('with your girlfriend ;)'))
-
     # Initial extensions to load.
     await ext_manager.load()
 
@@ -42,7 +40,7 @@ async def change_extlevel(ctx):
 
 @bot.command()
 async def reinit_manager(ctx):
-    """Reinitialize the ExtensionManager with the current extension_levle. Will add any new discovered extension files
+    """Reinitialize the ExtensionManager with the current extension_level. Will add any new discovered extension files
     to the list of all available extensions to the manager."""
     await ext_manager.reinit()
     await ctx.send("Successfully reinitialize.")
@@ -50,7 +48,8 @@ async def reinit_manager(ctx):
 
 @bot.command()
 async def reload_all(ctx):
-    """Reloads all the current loaded extensions"""
+    """Reloads all the current loaded extensions except for the ExtensionLoader. If need to reload the ExtensionLoader,
+    use the reinit_manager function."""
     await ext_manager.reload_all()
     await ctx.send("Successfully reloaded.")
 
