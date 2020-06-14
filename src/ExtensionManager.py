@@ -35,17 +35,17 @@ async def get_list_of_files(directory):
 
 
 async def format_helper(list_of_extensions):
-    msg = "```"
+    msg = "```\n"
     for extension in list_of_extensions:
-        msg = msg + "{}/n".format(extension)
-    msg += "```"
+        msg = msg + "{}\n".format(extension)
+    msg = msg + "```"
     return msg
 
 
 class ExtensionManager:
     def __init__(self, bot, level="Minimum"):
         self.bot = bot
-        self.extension_dict = {}
+        self.extensions_dict = {}
         self.extension_level = {}
         self.level = level
         self.loaded_extensions = []
@@ -53,13 +53,20 @@ class ExtensionManager:
     async def _create(self):
         """"Adds extensions_dict and extension_level as attributes."""
         self.extensions_dict = await create_file_dict("Extensions")
+        all_ext = list(self.extensions_dict.keys())
         self.extension_level = {
             # Dictionary for how many extensions to add during the initialization of the bot.
             # All of the values are lists of extension names.
-            'All': list(self.extensions_dict.keys()),
+            'All': all_ext,
             'Partial': ['Greetings'],
             'Minimum': []
         }
+
+    async def _intialize_ExtensionLoader(self):
+        self.bot.add_cog(ExtensionLoader(self.bot, self.loaded_extensions, self.extensions_dict))
+        self.loaded_extensions.append('ExtensionLoader')
+        self.extensions_dict['ExtensionLoader'] = 'ExtensionManager'
+        print("Finished loading: ExtensionLoader")
 
     async def load(self):
         """"Calls _create() to add the required attributes. Then loads the number of extensions based on level."""
@@ -68,8 +75,6 @@ class ExtensionManager:
         for extension in self.loaded_extensions:
             self.bot.load_extension(self.extensions_dict[extension])
             print("Finished loading: {}".format(extension))
-        self.bot.add_cog(
-            ExtensionLoader(self.bot, self.loaded_extensions.append('ExtensionLoader'), self.extension_dict))
 
     async def change_level(self, level):
         self.level = level
@@ -81,19 +86,21 @@ class ExtensionManager:
 
     async def reload_all(self):
         for extension in self.loaded_extensions:
+            if extension == 'ExtensionLoader':
+                continue
             self.bot.reload_extension(self.extensions_dict[extension])
 
 
 class ExtensionLoader(commands.Cog):
-    def __init__(self, bot, loaded_extensions, extension_dict):
+    def __init__(self, bot, loaded_extensions, extensions_dict):
         self.bot = bot
         self.loaded_extensions = loaded_extensions
-        self.extension_dict = extension_dict
+        self.extensions_dict = extensions_dict
 
     @commands.command()
     async def load(self, ctx, extension):
         """Load the named extension using the extension dictionary"""
-        if not (extension in list(self.xtensions_dict.keys())):
+        if not (extension in list(self.extensions_dict.keys())):
             ctx.send("Extension not found")
         elif extension in self.loaded_extensions:
             ctx.send("Extension already loaded. Do you want to reload it? (Y/N)")
@@ -124,5 +131,6 @@ class ExtensionLoader(commands.Cog):
     @commands.command()
     async def listext(self, ctx):
         """Sends the list of all available """
-        msg = format_helper(list(self.extensions_dict.keys()))
+        await ctx.send("Give me a sec")
+        msg = await format_helper(list(self.extensions_dict.keys()))
         await ctx.send(msg)
