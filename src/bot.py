@@ -24,7 +24,7 @@ async def on_ready():
 
     # Initial extensions to load
     ext_manager = ExtensionManager(bot)
-    ext_manager.load("All")
+    ext_manager.load()
 
     print('Bot is ready.')
 
