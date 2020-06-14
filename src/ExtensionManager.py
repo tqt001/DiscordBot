@@ -28,43 +28,68 @@ async def get_list_of_files(directory):
     return all_files
 
 
-extensions_dict = await create_file_dict("Extensions")
+async def format_helper(list_of_extensions):
+    msg = "```"
+    for extension in list_of_extensions:
+        msg = msg + "{}/n".format(extension)
+    msg += "```"
+    return msg
 
 
 class ExtensionManager:
-    extension_level = {
-        # Dictionary for how many extensions to add during the initialization of the bot.
-        # All of the values are lists of extension names.
-        'All': list(extensions_dict.keys()),
-        'Partial': ['Greetings'],
-        'Minimum': []
-    }
-
-    def __init__(self, bot, level='Minimum'):
+    def __init__(self, bot, level="Minimum"):
         self.bot = bot
+        self.extension_dict = {}
+        self.extension_level = {}
+        self.level = level
+        self.loaded_extensions = []
+
+    async def _create(self):
+        """"Adds extensions_dict and extension_level as attributes."""
+        self.extensions_dict = await create_file_dict("Extensions")
+        self.extension_level = {
+            # Dictionary for how many extensions to add during the initialization of the bot.
+            # All of the values are lists of extension names.
+            'All': list(self.extensions_dict.keys()),
+            'Partial': ['Greetings'],
+            'Minimum': []
+        }
+
+    async def load(self):
+        """"Calls _create() to add the required attributes. Then loads the number of extensions based on level."""
+        await self._create()
+        self.loaded_extensions = self.extension_level[self.level]
+        for extension in self.loaded_extensions:
+            self.bot.load_extension(self.extensions_dict[extension])
+            print("Finished loading: {}".format(extension))
+        self.bot.add_cog(ExtensionLoader(self.bot, self.loaded_extensions.append('ExtensionLoader'), self.extension_dict))
+
+    async def change_level(self, level):
         self.level = level
 
-    def load(self):
-        extensions = ExtensionManager.extension_level[self.level]
-        for extension in extensions:
-            self.bot.load_extension(extensions_dict[extension])
-            print("Finished loading: {}".format(extension))
-        self.bot.add_cog(ExtensionLoader(self.bot, extensions.append('ExtensionLoader')))
+    async def reinit(self):
+        for extension in self.loaded_extensions:
+            self.bot.unload_extension(self.extensions_dict[extension])
+        await self.load()
+
+    async def reload_all(self):
+        for extension in self.loaded_extensions:
+            self.bot.reload_extension(self.extensions_dict[extension])
 
 
 class ExtensionLoader(commands.bot):
-    def __init__(self, bot, loaded_extensions):
+    def __init__(self, bot, loaded_extensions, extension_dict):
         self.bot = bot
         self.loaded_extensions = loaded_extensions
+        self.extension_dict = extension_dict
 
     @commands.command()
     async def load(self, ctx, extension):
         """Load the named extension using the extension dictionary"""
-        channel = ctx.message.channel
-        if not (extension in list(extensions_dict.keys())):
-            channel.send("Extension not found")
+        if not (extension in list(self.xtensions_dict.keys())):
+            ctx.send("Extension not found")
         elif extension in self.loaded_extensions:
-            channel.send("Extension already loaded. Do you want to reload it? (Y/N)")
+            ctx.send("Extension already loaded. Do you want to reload it? (Y/N)")
             try:
                 def check(m):
                     m = m.upper().lower()
@@ -72,33 +97,25 @@ class ExtensionLoader(commands.bot):
 
                 msg = await self.bot.wait_for('message', timeout=60, check=check)
                 if msg.content.upper().lower() == 'y':
-                    self.bot.reload_extension(extensions_dict[extension])
-                    await channel.send("Successfully reloaded {}".format(extension))
+                    self.bot.reload_extension(self.extensions_dict[extension])
+                    await ctx.send("Successfully reloaded {}".format(extension))
                 else:
                     return
             except asyncio.TimeoutError:
-                await channel.send('No answer received.')
+                await ctx.send('No answer received.')
         else:
-            self.bot.load_extension(extensions_dict[extension])
+            self.bot.load_extension(self.extensions_dict[extension])
             self.loaded_extensions.append(extension)
-            await channel.send("Successfully loaded {}".format(extension))
+            await ctx.send("Successfully loaded {}".format(extension))
 
     @commands.command()
     async def loaded(self, ctx):
         """Sends the list of all loaded extensions to the channel that the user issued the command"""
-        channel = ctx.message.channel
-        msg = await self.format_helper(self.loaded_extensions)
-        await channel.send(msg)
+        msg = await format_helper(self.loaded_extensions)
+        await ctx.send(msg)
 
     @commands.command()
     async def listext(self, ctx):
-        channel = ctx.message.channel
-        msg = self.format_helper(list(self.extensions_dict.keys()))
-        await channel.send(msg)
-
-    async def format_helper(self, list_of_extensions):
-        msg = "```"
-        for extension in self.list_of_extensions:
-            msg = msg + "{}/n".format(extension)
-        msg += "```"
-        return msg
+        """Sends the list of all available """
+        msg = format_helper(list(self.extensions_dict.keys()))
+        await ctx.send(msg)
