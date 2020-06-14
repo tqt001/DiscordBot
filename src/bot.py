@@ -12,6 +12,7 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 bot = commands.Bot(command_prefix='.')
+ext_manager = ExtensionManager(bot, "All")
 TOKEN = TokenManager("TokenManagement/token.txt").read_token()
 
 
@@ -23,10 +24,22 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('with your girlfriend ;)'))
 
     # Initial extensions to load. Options: All, Partial, Minimum
-    ext_manager = ExtensionManager(bot, "All")
-    ext_manager.load()
+    await ext_manager.load()
 
     print('Bot is ready.')
+
+
+@bot.command()
+async def reinit_manager():
+    """Reinitialize the ExtensionManager. Will add any new discovered extension files to the list of all available
+    extensions to the manager."""
+    await ext_manager.reinit()
+
+
+@bot.command()
+async def reload_all():
+    """Reloads all the current loaded extensions"""
+    await ext_manager.reload_all()
 
 
 @bot.event
