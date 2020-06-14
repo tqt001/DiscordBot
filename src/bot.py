@@ -1,7 +1,7 @@
-import os
 import discord
 from discord.ext import commands
 from src.TokenManagement.TokenManager import TokenManager
+from src.ExtensionManager import ExtensionManager
 import logging
 
 # Ghetto logging
@@ -17,27 +17,16 @@ TOKEN = TokenManager("TokenManagement/token.txt").read_token()
 
 @bot.event
 async def on_ready():
-    bot.load_extension('Extensions.Misc.Checker')
+    """Tasks to initialize when the bot is finished loading and logged into discord."""
+
+    # Sets bot's status
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('with your girlfriend ;)'))
+
+    # Initial extensions to load
+    ext_manager = ExtensionManager(bot)
+    ext_manager.load("All")
+
     print('Bot is ready.')
-
-
-@bot.command()
-async def list_extensions():
-    """Lists all the extensions available to the bot."""
-    pass
-
-
-@bot.command()
-async def load(ctx, extension):
-    """Load the named extension using the extension dictionary"""
-    bot.load_extension(extension)
-
-
-@bot.command()
-async def reload(ctx, extension):
-    """Reload the named extension"""
-    bot.reload_extension(extension)
 
 
 @bot.event
@@ -54,10 +43,5 @@ async def on_member_remove(ctx, member):
 async def clear(ctx, amount=50):
     await ctx.channel.purge(limit=amount)
     await ctx.send(f'Clear complete.')
-
-
-'''for file in os.listdir('cogs'):
-    if file.endswith('.py'):
-        bot.load_extension(f'cogs.{file[:-3]}')'''
 
 bot.run(TOKEN)
