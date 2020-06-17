@@ -75,6 +75,7 @@ class ExtensionManager:
         for extension in self.loaded_extensions:
             self.bot.load_extension(self.extensions_dict[extension])
             print("Finished loading: {}".format(extension))
+        self._intialize_ExtensionLoader()
 
     async def change_level(self, level):
         self.level = level
