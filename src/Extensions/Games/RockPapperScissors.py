@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 import numpy as rand
@@ -23,6 +25,10 @@ async def question(ctx):
     await ctx.send("(r)ock, (p)aper, (s)cissors? (q)uit")
 
 
+async def nullQuestion(ctx):
+    await ctx.send("Are you still there?")
+
+
 class RockPaperScissors(commands.Cog):
     currentState = None
 
@@ -30,11 +36,34 @@ class RockPaperScissors(commands.Cog):
         self.client = client
 
     async def setUp(self, ctx):
+        # ask the user for their choice
         await question(ctx)
+
+        # loop keeps the game running
         while self.currentState:
-            playerChoice = await self.client.wait_for('message', timeout=30)
-            botChoice = await random()
-            await self.winCondition(ctx, botChoice, playerChoice)
+            try:
+                playerChoice = await self.client.wait_for('message', timeout=15)
+
+            # if the user does not input choice in 15 seconds
+            except asyncio.TimeoutError:
+                await nullQuestion(ctx)
+
+                try:
+                    # provide player with second opportunity for answer
+                    playerChoice = await self.client.wait_for('message', timeout=5)
+
+                except asyncio.TimeoutError:
+                    # if user does not input any answer in allotted time, end game
+                    await self.endGame(ctx)
+                    await ctx.send("Please invoke game again.")
+
+                else:
+                    botChoice = await random()
+                    await self.winCondition(ctx, botChoice, playerChoice)
+
+            else:
+                botChoice = await random()
+                await self.winCondition(ctx, botChoice, playerChoice)
 
     async def winCondition(self, ctx, botChoice, playerChoice):
         if playerChoice.content.lower() == 'q':
@@ -48,6 +77,8 @@ class RockPaperScissors(commands.Cog):
             indexOfPlayer = moves.index(playerChoice.content.lower())
             indexOfBot = moves.index(botChoice)
             await ctx.send(botChoice)
+
+            # algorithm determining winner
             winner = (numOfElem + indexOfBot - indexOfPlayer) % numOfElem
 
             # condition 1, if winner is an even number, the bot wins
@@ -61,6 +92,9 @@ class RockPaperScissors(commands.Cog):
             # condition 3, if winner is 0, players tie
             else:
                 await ctx.send("It is a tie!")
+
+            # pause for 2 seconds
+            await asyncio.sleep(2)
             await question(ctx)
 
     async def endGame(self, ctx):
