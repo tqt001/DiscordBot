@@ -77,9 +77,6 @@ class RockPaperScissors(commands.Cog):
             await ctx.send("Let's play some rock, paper, scissors!")
             self.currentState = True
             await self.setUp(ctx)
-        await ctx.send("Let's play some rock, paper, scissors!")
-        self.currentState = True
-        await self.setUp(ctx)
 
 
 def setup(client):
